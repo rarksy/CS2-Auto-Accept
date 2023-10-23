@@ -65,15 +65,11 @@ int main()
 {
     int ScreenWidth = GetSystemMetrics(SM_CXSCREEN); 
     int ScreenHeight = GetSystemMetrics(SM_CYSCREEN);
-
     cv::Rect ScreenSize(0, 0, ScreenWidth, ScreenHeight);
-    cv::Mat ScreenFrame = GetScreenshot(ScreenSize, true);
     
     cv::Mat AcceptResource = cv::imread("cs2_accept.png", cv::IMREAD_GRAYSCALE);
-    
     if (ScreenHeight == 1080)
         ConvertTo1080p(AcceptResource);
-
     
     cv::Point DetectedLocation;
 
@@ -84,8 +80,13 @@ int main()
     std::cout.flush();
  
     // scan for accept button
-    do
+    while (true)
     {
+        cv::Mat ScreenFrame = GetScreenshot(ScreenSize, true);
+
+        if (TemplateMatch(ScreenFrame, AcceptResource, 0.8, DetectedLocation))
+            break;
+        
         for (int i = 0; i < 3; i++)
         {
             std::cout << ".";
@@ -95,10 +96,9 @@ int main()
         std::cout << "\b\b\b   \b\b\b";
         Sleep(400);
     }
-    while (!TemplateMatch(ScreenFrame, AcceptResource, 0.8, DetectedLocation));
 
     // move mouse and click
-    SetCursorPos(DetectedLocation.x + 10, DetectedLocation.y + 10);
+    SetCursorPos(DetectedLocation.x + 100, DetectedLocation.y + 50);
     Sleep(100);
     mouse_event(MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 }
